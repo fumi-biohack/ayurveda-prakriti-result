@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アーユルヴェーダ体質判定結果</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            /* Beautiful Dark Mode Palette */
+            --bg-color: #0b1120;
+            --card-bg: rgba(30, 41, 59, 0.4);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+
+            /* Dosha Colors */
+            --pitta-color: #FF5A5F;
+            /* Fire/Water - Vibrant Red/Orange */
+            --vata-color: #8B5CF6;
+            /* Air/Space - Ethereal Purple */
+            --kapha-color: #10B981;
+            /* Earth/Water - Calming Green */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.12), transparent 30%),
+                radial-gradient(circle at 90% 40%, rgba(255, 90, 95, 0.12), transparent 30%),
+                radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.12), transparent 30%);
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 580px;
+            width: 100%;
+            z-index: 10;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            padding: 3.5rem 2.5rem;
+            text-align: center;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 2.5rem;
+            color: #cbd5e1;
+        }
+
+        .result-highlight {
+            font-size: 3.2rem;
+            font-weight: 800;
+            display: block;
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 30px rgba(255, 255, 255, 0.15);
+            letter-spacing: -0.02em;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .scores-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .score-row {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 20px;
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-row:hover {
+            transform: scale(1.03) translateY(-2px);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Color Bars */
+        .score-row::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .score-row:hover::before {
+            width: 8px;
+        }
+
+        .score-row.pitta::before {
+            background: var(--pitta-color);
+            box-shadow: 0 0 20px var(--pitta-color);
+        }
+
+        .score-row.vata::before {
+            background: var(--vata-color);
+            box-shadow: 0 0 20px var(--vata-color);
+        }
+
+        .score-row.kapha::before {
+            background: var(--kapha-color);
+            box-shadow: 0 0 20px var(--kapha-color);
+        }
+
+        .score-label {
+            font-size: 1.15rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #e2e8f0;
+        }
+
+        .emoji-icon {
+            font-size: 1.4rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .score-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+        }
+
+        .explanation {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            text-align: left;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .explanation span {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .btn-restart {
+            display: inline-block;
+            padding: 1.1rem 2.5rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 99px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-restart:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="glass-card">
+            <div class="tagline">Ayurveda Assessment</div>
+            <div class="result-title">
+                あなたのプラクリティ（本来の体質）は
+                <span class="result-highlight" id="prakritiResult">計算中...</span>
+            </div>
+
+            <div class="scores-wrapper">
+                <div class="score-row pitta">
+                    <div class="score-label"><span class="emoji-icon">🔥</span> ピッタ (Pitta)</div>
+                    <div class="score-value" id="scorePitta">0</div>
+                </div>
+                <div class="score-row vata">
+                    <div class="score-label"><span class="emoji-icon">💨</span> ヴァータ (Vata)</div>
+                    <div class="score-value" id="scoreVata">0</div>
+                </div>
+                <div class="score-row kapha">
+                    <div class="score-label"><span class="emoji-icon">💧</span> カパ (Kapha)</div>
+                    <div class="score-value" id="scoreKapha">0</div>
+                </div>
+            </div>
+
+            <div class="explanation">
+                最も点数が高かったものがあなたのベースとなる体質です。<br>
+                <span>45点以上</span> の項目は、あなたの心身に極めて色濃く現れている優勢な性質（ドーシャ）を示しています。
+            </div>
+
+            <a href="javascript:history.back()" class="btn-restart">トップに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // URLパラメータから各スコアを取得 (URLSearchParams)
+            const urlParams = new URLSearchParams(window.location.search);
+            const kapha = parseInt(urlParams.get('kapha')) || 0;
+            const vata = parseInt(urlParams.get('vata')) || 0;
+            const pitta = parseInt(urlParams.get('pitta')) || 0;
+
+            // スコアのアニメーションカウントアップ
+            animateValue("scorePitta", 0, pitta, 1200);
+            animateValue("scoreVata", 0, vata, 1200);
+            animateValue("scoreKapha", 0, kapha, 1200);
+
+            // 診断ロジックの適用
+            // 優先順位: [1位] ピッタ ＞ [2位] ヴァータ ＞ [3位] カパ
+            // オブジェクトのキーを優先順位順に定義することでループ順序を意図的に制御
+            const scores = {
+                'ピッタ': pitta,
+                'ヴァータ': vata,
+                'カパ': kapha
+            };
+
+            let resultPrakriti = "";
+            let over45 = [];
+
+            for (const [key, value] of Object.entries(scores)) {
+                if (value >= 45) {
+                    over45.push(key);
+                }
+            }
+
+            if (over45.length > 0) {
+                // パターンA: 45点以上のものを複合（優先順位順に抽出）
+                resultPrakriti = over45.join('・');
+            } else {
+                // パターンB: 全て45点未満の場合は最大値
+                let maxVal = -1;
+                let maxKey = '';
+                for (const [key, value] of Object.entries(scores)) {
+                    if (value > maxVal) {
+                        maxVal = value;
+                        maxKey = key;
+                    }
+                }
+                resultPrakriti = maxKey;
+            }
+
+            // カウントアップ終了間際に結果テキストをフワッと表示
+            setTimeout(() => {
+                const resultElement = document.getElementById('prakritiResult');
+                resultElement.innerText = resultPrakriti;
+                resultElement.animate([
+                    { opacity: 0, transform: 'scale(0.8) translateY(10px)' },
+                    { opacity: 1, transform: 'scale(1.05) translateY(0)' },
+                    { opacity: 1, transform: 'scale(1) translateY(0)' }
+                ], { duration: 800, fill: 'forwards', easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
+
+                // 控えめなパーティクルエフェクト
+                triggerParticles();
+            }, 1000);
+        });
+
+        // カウントアップ関数
+        function animateValue(id, start, end, duration) {
+            if (start === end) {
+                document.getElementById(id).innerHTML = end;
+                return;
+            }
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // イージング: easeOutQuart
+                const easeOut = 1 - Math.pow(1 - progress, 4);
+                document.getElementById(id).innerHTML = Math.floor(easeOut * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    document.getElementById(id).innerHTML = end;
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // 結果表示時のパーティクル（紙吹雪）アニメーション
+        function triggerParticles() {
+            const colors = ['#FF5A5F', '#8B5CF6', '#10B981', '#38BDF8'];
+            for (let i = 0; i < 25; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                // ランダムなサイズと色
+                const size = Math.random() * 8 + 4;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // 中央上部から発生
+                particle.style.left = '50%';
+                particle.style.top = '30%';
+
+                document.body.appendChild(particle);
+
+                // アニメーションの計算
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 200 + 50;
+                const duration = Math.random() * 1.5 + 1;
+
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance + 100; // 重力を加味した落下距離
+
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+                    fill: 'forwards'
+                });
+
+                // DOMから削除
+                setTimeout(() => particle.remove(), duration * 1000);
+            }
+        }
+    </script>
+</body>
+
+</html>
