@@ -273,12 +273,30 @@
     </div>
 
     <script>
+        // 渡された文字列（例："022424225323432"）から先頭の0を除外し、残りの文字を数値として合算する関数
+        function calculateScoreFromString(str) {
+            if (!str || str.length <= 1) return 0;
+            // 先頭の文字（0など）を削除して残りを取得
+            const dataStr = str.substring(1);
+            let total = 0;
+            // 各文字を1桁の数字として順番に足し合わせる
+            for (let i = 0; i < dataStr.length; i++) {
+                total += parseInt(dataStr[i]) || 0;
+            }
+            return total;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // URLパラメータから各スコアを取得 (URLSearchParams)
+            // URLパラメータからそれぞれ連結された文字列を取得 (URLSearchParams)
             const urlParams = new URLSearchParams(window.location.search);
-            const kapha = parseInt(urlParams.get('kapha')) || 0;
-            const vata = parseInt(urlParams.get('vata')) || 0;
-            const pitta = parseInt(urlParams.get('pitta')) || 0;
+            const kaphaStr = urlParams.get('kapha') || "";
+            const vataStr = urlParams.get('vata') || "";
+            const pittaStr = urlParams.get('pitta') || "";
+
+            // 文字列をパースして実際のスコア（合計値）を算出
+            const kapha = calculateScoreFromString(kaphaStr);
+            const vata = calculateScoreFromString(vataStr);
+            const pitta = calculateScoreFromString(pittaStr);
 
             // スコアのアニメーションカウントアップ
             animateValue("scorePitta", 0, pitta, 1200);
